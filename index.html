@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Celebrity Auction</title>
+<style>
+:root{--bg:#0b1020;--panel:#141d34;--line:#2b3858;--text:#f5f7ff;--muted:#aab6d3;--gold:#ffd166;--blue:#7cc7ff;--green:#68e0a2;--red:#ff8190}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#1b2b4c,var(--bg) 55%);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--text);min-height:100vh}
+main{max-width:850px;margin:auto;padding:18px}.hero{text-align:center;padding:14px 4px 20px}.badge{display:inline-block;background:#253657;color:var(--gold);border:1px solid #425578;padding:5px 11px;border-radius:99px;font-size:12px;letter-spacing:1px}.hero h1{margin:10px 0 4px;font-size:clamp(28px,6vw,42px)}.hero p{color:var(--muted);margin:0}
+.panel{background:rgba(20,29,52,.96);border:1px solid var(--line);border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 12px 32px #0003}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.row>*{flex:1}.players{display:grid;grid-template-columns:1fr 1fr;gap:10px}.player{background:#10182b;border:1px solid var(--line);padding:13px;border-radius:14px}.player.active{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset}.player h3{margin:0 0 5px;font-size:15px}.money{font-size:24px;font-weight:800;color:var(--green)}.small{font-size:12px;color:var(--muted)}.celeb{text-align:center;padding:22px 10px}.avatar{font-size:54px;line-height:1.2}.celeb h2{font-size:28px;margin:8px 0}.rating{color:var(--gold);font-weight:800}.turn{color:var(--blue);font-weight:700;margin:8px 0}
+button,input{font:inherit}button{border:0;border-radius:12px;padding:12px 15px;background:#2c4168;color:white;font-weight:700;cursor:pointer}button.primary{background:linear-gradient(135deg,#ffcf66,#ff9f43);color:#231705}button.good{background:#176c51}button.danger{background:#673044}button:disabled{opacity:.38;cursor:not-allowed}input{width:100%;min-width:0;background:#0c1426;border:1px solid #3a4a6e;border-radius:10px;padding:12px;color:white}label{display:block;color:var(--muted);font-size:13px;margin-bottom:6px}.bidbox{display:grid;grid-template-columns:1fr 1fr;gap:10px}.bidbox .full{grid-column:1/-1}.sectiontitle{margin:0 0 12px;font-size:18px}.history{display:grid;gap:8px}.historyitem{display:flex;justify-content:space-between;gap:8px;padding:10px;background:#0e172a;border-radius:10px;font-size:14px}.historyitem span:last-child{color:var(--gold);font-weight:700;text-align:right}.hidden{display:none!important}.winner{text-align:center}.winner strong{font-size:24px;color:var(--gold)}.foot{text-align:center;color:var(--muted);font-size:12px;padding:15px}
+@media(max-width:520px){main{padding:12px}.panel{padding:13px}.players{gap:7px}.player{padding:10px}.money{font-size:21px}.bidbox{grid-template-columns:1fr}.bidbox .full{grid-column:auto}.avatar{font-size:46px}}
+</style>
+</head>
+<body>
+<main>
+  <header class="hero">
+    <span class="badge">2 PLAYERS · 10 ROUNDS</span>
+    <h1>🏆 Celebrity Auction</h1>
+    <p>Build your dream team. Win on popularity, not team size.</p>
+  </header>
+  <section class="panel" id="setup">
+    <h2 class="sectiontitle">Choose how to play</h2>
+    <p class="small">This version supports two players sharing one phone. Online play across different phones needs a separate multiplayer service.</p>
+    <div class="row">
+      <div><label for="p1name">Player 1 name</label><input id="p1name" maxlength="18" value="Player 1"></div>
+      <div><label for="p2name">Player 2 name</label><input id="p2name" maxlength="18" value="Player 2"></div>
+    </div>
+    <p><button class="primary" id="startBtn">Start Auction</button></p>
+  </section>
+  <section id="game" class="hidden">
+    <div class="players">
+      <div class="player" id="p1card"><h3 id="p1label">Player 1</h3><div class="money" id="p1money">$20</div><div class="small" id="p1stats">0 celebrities · 0 points</div></div>
+      <div class="player" id="p2card"><h3 id="p2label">Player 2</h3><div class="money" id="p2money">$20</div><div class="small" id="p2stats">0 celebrities · 0 points</div></div>
+    </div>
+    <div class="panel celeb">
+      <div class="small" id="round">ROUND 1 OF 10</div>
+      <div class="avatar" id="avatar">🏏</div>
+      <h2 id="celebName">Virat Kohli</h2>
+      <div class="rating" id="rating">Popularity: 100 points</div>
+      <div class="turn" id="turn">Player 1's turn</div>
+      <div id="bidstatus">No bids yet. Opening bid: $1</div>
+    </div>
+    <section class="panel" id="controls">
+      <h2 class="sectiontitle">Place your bid</h2>
+      <div class="bidbox">
+        <div><label for="bidAmount">Your bid ($)</label><input type="number" id="bidAmount" min="1" step="1" value="1" inputmode="numeric"></div>
+        <div style="display:flex;align-items:end"><button class="primary" id="bidBtn" style="width:100%">Place Bid</button></div>
+        <button class="good" id="passBtn">Pass / Fold</button>
+        <button id="restartBtn">Restart Game</button>
+      </div>
+      <p class="small">Bids must increase by at least $1. A bid cannot exceed your remaining budget.</p>
+    </section>
+    <section class="panel">
+      <h2 class="sectiontitle">Auction history</h2>
+      <div class="history" id="history"><div class="small">No auction results yet.</div></div>
+    </section>
+  </section>
+  <section class="panel winner hidden" id="results">
+    <h2>🏁 Auction Complete!</h2>
+    <p id="resultText"></p>
+    <div class="players">
+      <div class="player"><h3 id="finalp1">Player 1</h3><div class="money" id="finalpts1">0 points</div><div class="small" id="finalteam1">No celebrities</div></div>
+      <div class="player"><h3 id="finalp2">Player 2</h3><div class="money" id="finalpts2">0 points</div><div class="small" id="finalteam2">No celebrities</div></div>
+    </div>
+    <p><button class="primary" id="playAgain">Play Again (Shuffle)</button></p>
+  </section>
+  <div class="foot">Fan-made game concept. Celebrity popularity scores are illustrative, not official measurements.</div>
+</main>
+<script>
+const CELEBRITIES=[
+ {name:"Virat Kohli",points:100,emoji:"🏏"},{name:"MS Dhoni",points:98,emoji:"🧤"},
+ {name:"Shah Rukh Khan",points:99,emoji:"🎬"},{name:"MrBeast",points:97,emoji:"🎁"},
+ {name:"Rohit Sharma",points:94,emoji:"🏏"},{name:"Salman Khan",points:92,emoji:"🎥"},
+ {name:"Amitabh Bachchan",points:93,emoji:"🎭"},{name:"CarryMinati",points:89,emoji:"🎮"},
+ {name:"Neeraj Chopra",points:82,emoji:"🥇"},{name:"Deepika Padukone",points:88,emoji:"🎬"},
+ {name:"Sachin Tendulkar",points:96,emoji:"🏏"},{name:"Priyanka Chopra",points:87,emoji:"🌟"},
+ {name:"Taylor Swift",points:95,emoji:"🎤"},{name:"Cristiano Ronaldo",points:99,emoji:"⚽"},
+ {name:"Lionel Messi",points:99,emoji:"⚽"},{name:"A.R. Rahman",points:85,emoji:"🎹"},
+ {name:"Akshay Kumar",points:86,emoji:"🎬"},{name:"Sundar Pichai",points:84,emoji:"💡"},
+ {name:"Badshah",points:83,emoji:"🎤"},{name:"Emma Watson",points:80,emoji:"🎬"}
+];
+let state=null;
+const $=id=>document.getElementById(id);
+function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}return arr;}
+function makeState(){
+ const names=[$("p1name").value.trim()||"Player 1",$("p2name").value.trim()||"Player 2"];
+ const list=shuffle([...CELEBRITIES]).slice(0,10);
+ return {players:names.map(name=>({name,budget:20,team:[],points:0})),list,round:0,turn:0,highBid:0,leader:null,passes:0,history:[],done:false};
+}
+function start(){state=makeState();$("setup").classList.add("hidden");$("results").classList.add("hidden");$("game").classList.remove("hidden");render();}
+function render(){
+ if(!state)return;
+ state.players.forEach((p,i)=>{$("p"+(i+1)+"label").textContent=p.name;$("p"+(i+1)+"money").textContent="$"+p.budget;$("p"+(i+1)+"stats").textContent=p.team.length+" celebrities · "+p.points+" points";$("p"+(i+1)+"card").classList.toggle("active",!state.done&&state.turn===i);});
+ if(state.done){finish();return;}
+ const c=state.list[state.round];$("round").textContent="ROUND "+(state.round+1)+" OF 10";$("avatar").textContent=c.emoji;$("celebName").textContent=c.name;$("rating").textContent="Popularity: "+c.points+" points";
+ $("turn").textContent=state.players[state.turn].name+"'s turn";
+ $("bidstatus").textContent=state.leader===null?"No bids yet. Opening bid: $1":state.players[state.leader].name+" leads at $"+state.highBid;
+ $("bidAmount").min=state.highBid+1;$("bidAmount").max=state.players[state.turn].budget;$("bidAmount").value=Math.min(Math.max(state.highBid+1,1),state.players[state.turn].budget);
+ $("bidBtn").disabled=state.players[state.turn].budget<state.highBid+1;
+}
+function log(text,right){if(state.history.length===0)$("history").innerHTML="";const el=document.createElement("div");el.className="historyitem";const a=document.createElement("span"),b=document.createElement("span");a.textContent=text;b.textContent=right;el.append(a,b);$("history").prepend(el);}
+function bid(){
+ const p=state.players[state.turn],amount=Number.parseInt($("bidAmount").value,10);
+ if(!Number.isInteger(amount)||amount<state.highBid+1||amount>p.budget){alert("Enter a whole-dollar bid from $"+(state.highBid+1)+" to $"+p.budget+".");return;}
+ state.highBid=amount;state.leader=state.turn;state.passes=0;log(p.name+" bids on "+state.list[state.round].name,"$"+amount);
+ state.turn=1-state.turn;render();
+}
+function pass(){
+ const p=state.players[state.turn];
+ if(state.leader!==null){
+   log(p.name+" passes; "+state.players[state.leader].name+" wins "+state.list[state.round].name,"$"+state.highBid);
+   award();return;
+ }
+ state.passes++;
+ log(p.name+" passes","No bid");
+ if(state.passes>=2){log(state.list[state.round].name+" skipped","No sale");nextRound();return;}
+ state.turn=1-state.turn;render();
+}
+function award(){
+ const p=state.players[state.leader],c=state.list[state.round];
+ p.budget-=state.highBid;p.team.push(c);p.points+=c.points;
+ log(c.name+" awarded to "+p.name,c.points+" points");
+ nextRound();
+}
+function nextRound(){
+ state.round++;
+ if(state.round>=state.list.length){state.done=true;$("game").classList.add("hidden");$("results").classList.remove("hidden");finish();return;}
+ state.turn=0;state.highBid=0;state.leader=null;state.passes=0;render();
+}
+function finish(){
+ const [a,b]=state.players;
+ $("finalp1").textContent=a.name;$("finalp2").textContent=b.name;
+ $("finalpts1").textContent=a.points+" popularity points";$("finalpts2").textContent=b.points+" popularity points";
+ $("finalteam1").textContent=a.team.length?a.team.map(c=>c.name).join(", "):"No celebrities";
+ $("finalteam2").textContent=b.team.length?b.team.map(c=>c.name).join(", "):"No celebrities";
+ let msg=a.points===b.points?"It's a tie!":a.points>b.points?a.name+" wins by "+(a.points-b.points)+" points!":b.name+" wins by "+(b.points-a.points)+" points!";
+ $("resultText").innerHTML="<strong>"+msg+"</strong><br>Winner is decided by total popularity points, not team size.";
+}
+$("startBtn").addEventListener("click",start);$("bidBtn").addEventListener("click",bid);$("passBtn").addEventListener("click",pass);
+$("restartBtn").addEventListener("click",()=>{if(confirm("Restart and shuffle a new set of 10 celebrities?"))start();});
+$("playAgain").addEventListener("click",()=>{start();window.scrollTo({top:0,behavior:"smooth"});});
+</script>
+</body>
+</html>
