@@ -2,7 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b1020">
+<meta name="description" content="Play Celebrity Auction with two players. Build your dream team and win on popularity points.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
 <title>Celebrity Auction</title>
 <style>
 :root{--bg:#0b1020;--panel:#141d34;--line:#2b3858;--text:#f5f7ff;--muted:#aab6d3;--gold:#ffd166;--blue:#7cc7ff;--green:#68e0a2;--red:#ff8190}
@@ -142,6 +147,9 @@ function finish(){
 $("startBtn").addEventListener("click",start);$("bidBtn").addEventListener("click",bid);$("passBtn").addEventListener("click",pass);
 $("restartBtn").addEventListener("click",()=>{if(confirm("Restart and shuffle a new set of 10 celebrities?"))start();});
 $("playAgain").addEventListener("click",()=>{start();window.scrollTo({top:0,behavior:"smooth"});});
+</script>
+<script>
+if ("serviceWorker" in navigator) { window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(err => console.log("Offline support unavailable", err))); }
 </script>
 </body>
 </html>
